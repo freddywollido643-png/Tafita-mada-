@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up Java JDK 17
@@ -19,21 +19,52 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js 20
+      - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install Dependencies & Build Web Bundle
+      - name: Install & Build Web Assets
         run: |
-          npm ci
+          npm install
           npm run build
 
-      - name: Grant Execute Permission for Gradle
-        run: chmod +x ./gradlew || true
+      - name: Fix Kotlin Duplicate Dependencies
+        run: |
+          # Mitady ny build.gradle ao amin'ny app mba hanesorana ny olan'ny dika mitovy amin'ny Kotlin
+          GRADLE_PATH=$(find . -name "build.gradle" | grep "app" | head -n 1)
+          if [ -n "$GRADLE_PATH" ]; then
+            echo "
+            dependencies {
+                modules {
+                    module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') {
+                        replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk7')
+                    }
+                    module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') {
+                        replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk8')
+                    }
+                }
+            }
+            " >> "$GRADLE_PATH"
+          fi
 
-      - name: Upload Build Artifacts
+      - name: Grant Execute Permission for Gradle Wrapper
+        run: |
+          chmod +x ./gradlew || chmod +x android/gradlew || true
+
+      - name: Build Android APK
+        run: |
+          if [ -f "./gradlew" ]; then
+            ./gradlew assembleDebug --no-daemon
+          elif [ -f "android/gradlew" ]; then
+            cd android && ./gradlew assembleDebug --no-daemon
+          else
+            echo "Tsy hita ny gradlew!"
+            exit 1
+          fi
+
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TafitaMada-WebBundle
-          path: dist/
+          name: TafitaMada-v1.0-APK
+          path: "**/build/outputs/apk/debug/*.apk"
