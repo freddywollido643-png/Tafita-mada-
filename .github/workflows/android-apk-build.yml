@@ -35,8 +35,13 @@ jobs:
           echo 'import { CapacitorConfig } from "@capacitor/cli"; const config: CapacitorConfig = { appId: "com.tafitamada.app", appName: "Tafita Mada", webDir: "dist" }; export default config;' > capacitor.config.ts
           npx cap sync android
 
-      - name: Grant Execute Permission for Gradle
-        run: chmod +x android/gradlew
+      - name: Initialize Gradle Wrapper if Missing
+        run: |
+          cd android
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --gradle-version 8.2.1
+          fi
+          chmod +x gradlew
 
       - name: Build Android APK (Debug)
         run: |
