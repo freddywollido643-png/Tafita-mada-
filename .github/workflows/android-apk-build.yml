@@ -43,15 +43,19 @@ jobs:
 
       - name: Fix Kotlin Duplicate Dependencies
         run: |
+          # Ampiana ao amin'ny android/app/build.gradle ny vahaolana
           echo "
-          configurations.all {
-              resolutionStrategy {
-                  force 'org.jetbrains.kotlin:kotlin-stdlib:1.8.22'
-                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk7:1.8.22'
-                  force 'org.jetbrains.kotlin:kotlin-stdlib-jdk8:1.8.22'
+          dependencies {
+              modules {
+                  module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') {
+                      replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk7')
+                  }
+                  module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') {
+                      replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk8')
+                  }
               }
           }
-          " >> android/build.gradle
+          " >> android/app/build.gradle
 
       - name: Grant Execute Permission for Gradle
         run: chmod +x android/gradlew
