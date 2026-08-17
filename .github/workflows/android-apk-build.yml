@@ -47,23 +47,24 @@ jobs:
             " >> "$GRADLE_PATH"
           fi
 
-      - name: Grant Execute Permission for Gradle Wrapper
+      - name: Generate Gradle Wrapper if Missing
         run: |
-          if [ -f "android/gradlew" ]; then
-            chmod +x android/gradlew
-          elif [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
+          # Raha ao amin'ny fampirimana android no misy ny tetikasa dia ao no mamorona gradlew
+          if [ -d "android" ]; then
+            cd android
+            gradle wrapper --gradle-version 8.2
+            chmod +x gradlew
+          else
+            gradle wrapper --gradle-version 8.2
+            chmod +x gradlew
           fi
 
       - name: Build Android APK
         run: |
-          if [ -f "android/gradlew" ]; then
+          if [ -d "android" ]; then
             cd android && ./gradlew assembleDebug --no-daemon
-          elif [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --no-daemon
           else
-            echo "Tsy hita ny rakitra gradlew!"
-            exit 1
+            ./gradlew assembleDebug --no-daemon
           fi
 
       - name: Upload APK Artifact
