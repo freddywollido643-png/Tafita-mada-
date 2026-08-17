@@ -39,6 +39,9 @@ jobs:
           
           # Foronina vaovao madio tanteraka
           npx cap add android
+          
+          # Terena handika ny rakitra dist rehetra ho ao amin'ny Android asset folder
+          npx cap copy android
           npx cap sync android
 
       - name: Fix Internet Permissions & Cleartext Traffic
