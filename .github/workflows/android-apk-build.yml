@@ -29,9 +29,10 @@ jobs:
           npm install
           npm run build
 
-      - name: Setup Capacitor for Mobile
+      - name: Setup Capacitor Configuration
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
+          echo 'import { CapacitorConfig } from "@capacitor/cli"; const config: CapacitorConfig = { appId: "com.tafitamada.app", appName: "Tafita Mada", webDir: "dist" }; export default config;' > capacitor.config.ts
           npx cap sync android
 
       - name: Grant Execute Permission for Gradle
