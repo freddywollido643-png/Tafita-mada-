@@ -31,7 +31,7 @@ jobs:
 
       - name: Fix Kotlin Duplicate Dependencies
         run: |
-          # Mitady ny build.gradle ao amin'ny app mba hanesorana ny olan'ny dika mitovy amin'ny Kotlin
+          # Mitady ny build.gradle ao amin'ny fampirimana android/app
           GRADLE_PATH=$(find . -name "build.gradle" | grep "app" | head -n 1)
           if [ -n "$GRADLE_PATH" ]; then
             echo "
@@ -50,16 +50,22 @@ jobs:
 
       - name: Grant Execute Permission for Gradle Wrapper
         run: |
-          chmod +x ./gradlew || chmod +x android/gradlew || true
+          # Omena alalana hiasa ny gradlew ao amin'ny fampirimana android
+          if [ -f "android/gradlew" ]; then
+            chmod +x android/gradlew
+          elif [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+          fi
 
       - name: Build Android APK
         run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --no-daemon
-          elif [ -f "android/gradlew" ]; then
+          # Miditra ao amin'ny fampirimana android alohan'ny hanombohana ny build
+          if [ -f "android/gradlew" ]; then
             cd android && ./gradlew assembleDebug --no-daemon
+          elif [ -f "./gradlew" ]; then
+            ./gradlew assembleDebug --no-daemon
           else
-            echo "Tsy hita ny gradlew!"
+            echo "Tsy hita ny rakitra gradlew!"
             exit 1
           fi
 
