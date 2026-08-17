@@ -29,19 +29,20 @@ jobs:
           npm install
           npm run build
 
-      - name: Setup Capacitor Configuration
+      - name: Recreate Clean Capacitor Android Platform
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
           echo 'import { CapacitorConfig } from "@capacitor/cli"; const config: CapacitorConfig = { appId: "com.tafitamada.app", appName: "Tafita Mada", webDir: "dist" }; export default config;' > capacitor.config.ts
+          
+          # Fafana ny fampirimana android taloha raha tsy feno
+          rm -rf android
+          
+          # Foronina vaovao madio tanteraka misy Gradle settings rehetra
+          npx cap add android
           npx cap sync android
 
-      - name: Initialize Gradle Wrapper if Missing
-        run: |
-          cd android
-          if [ ! -f "gradlew" ]; then
-            gradle wrapper --gradle-version 8.2.1
-          fi
-          chmod +x gradlew
+      - name: Grant Execute Permission for Gradle
+        run: chmod +x android/gradlew
 
       - name: Build Android APK (Debug)
         run: |
