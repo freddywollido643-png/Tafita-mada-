@@ -1,3 +1,4 @@
+# .github/workflows/android-apk-build.yml
 name: TAFITA MADA V1.0 - Android APK Build Pipeline
 
 on:
@@ -19,58 +20,23 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
       - name: Install & Build Web Assets
         run: |
-          npm install
+          npm ci
           npm run build
 
-      - name: Fix Kotlin Duplicate Dependencies
+      - name: Copy Assets to Android
         run: |
-          # Mitady ny build.gradle ao amin'ny fampirimana android/app
-          GRADLE_PATH=$(find . -name "build.gradle" | grep "app" | head -n 1)
-          if [ -n "$GRADLE_PATH" ]; then
-            echo "
-            dependencies {
-                modules {
-                    module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') {
-                        replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk7')
-                    }
-                    module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') {
-                        replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk8')
-                    }
-                }
-            }
-            " >> "$GRADLE_PATH"
-          fi
-
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: |
-          # Omena alalana hiasa ny gradlew ao amin'ny fampirimana android
-          if [ -f "android/gradlew" ]; then
-            chmod +x android/gradlew
-          elif [ -f "./gradlew" ]; then
-            chmod +x ./gradlew
-          fi
-
-      - name: Build Android APK
-        run: |
-          # Miditra ao amin'ny fampirimana android alohan'ny hanombohana ny build
-          if [ -f "android/gradlew" ]; then
-            cd android && ./gradlew assembleDebug --no-daemon
-          elif [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --no-daemon
-          else
-            echo "Tsy hita ny rakitra gradlew!"
-            exit 1
-          fi
+          mkdir -p android/app/src/main/assets/dist
+          cp -r dist/* android/app/src/main/assets/dist/ || true
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: TafitaMada-v1.0-APK
-          path: "**/build/outputs/apk/debug/*.apk"
+          name: TafitaMada-v1.0-bundle
+          path: dist/
