@@ -181,20 +181,26 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
 
   // Network state detection
   useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
+    const updateOnlineStatus = () => {
+      setIsOnline(navigator.onLine);
+    };
 
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
+    window.addEventListener('online', updateOnlineStatus);
+    window.addEventListener('offline', updateOnlineStatus);
 
-    // Initial health ping
+    // Initial check
+    setIsOnline(navigator.onLine);
+
+    // Optional server health ping if available
     apiService.checkServerHealth().then(healthy => {
-      setIsOnline(healthy && navigator.onLine);
+      if (healthy) {
+        setIsOnline(true);
+      }
     });
 
     return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
+      window.removeEventListener('online', updateOnlineStatus);
+      window.removeEventListener('offline', updateOnlineStatus);
     };
   }, []);
 

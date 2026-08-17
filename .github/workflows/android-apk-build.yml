@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      - name: Checkout Repository
         uses: actions/checkout@v4
 
       - name: Set up Java JDK 17
@@ -19,68 +19,21 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Set up Node.js
+      - name: Set up Node.js 20
         uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Install & Build Web Assets
+      - name: Install Dependencies & Build Web Bundle
         run: |
-          npm install
+          npm ci
           npm run build
 
-      - name: Inject Internet Permissions into Android Manifest
-        run: |
-          # Mitady ny AndroidManifest.xml ao amin'ny tetikasa mivantana
-          MANIFEST_PATH=$(find . -name "AndroidManifest.xml" | grep -v "build" | head -n 1)
-          if [ -n "$MANIFEST_PATH" ]; then
-            echo "Hita ny Manifest ao amin'ny: $MANIFEST_PATH"
-            # Manampy ny alàlana hifandray internet
-            sed -i '/<\/manifest>/i \    <uses-permission android:name="android.permission.INTERNET" \/>' "$MANIFEST_PATH"
-            sed -i '/<\/manifest>/i \    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" \/>' "$MANIFEST_PATH"
-            # Mamela ny cleartext traffic (HTTP)
-            sed -i 's/<application/<application android:usesCleartextTraffic="true"/g' "$MANIFEST_PATH"
-          else
-            echo "Tsy hita ny AndroidManifest.xml!"
-          fi
+      - name: Grant Execute Permission for Gradle
+        run: chmod +x ./gradlew || true
 
-      - name: Fix Kotlin Duplicate Dependencies
-        run: |
-          # Amboarina mivantana ao amin'ilay build.gradle vao nasehonao teo ny olana momba ny Kotlin
-          GRADLE_PATH=$(find . -name "build.gradle" | grep "app" | head -n 1)
-          if [ -n "$GRADLE_PATH" ]; then
-            echo "Hita ny build.gradle ao amin'ny: $GRADLE_PATH"
-            echo "
-            dependencies {
-                modules {
-                    module('org.jetbrains.kotlin:kotlin-stdlib-jdk7') {
-                        replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk7')
-                    }
-                    module('org.jetbrains.kotlin:kotlin-stdlib-jdk8') {
-                        replacedBy('org.jetbrains.kotlin:kotlin-stdlib', 'Use stdlib instead of jdk8')
-                    }
-                }
-            }
-            " >> "$GRADLE_PATH"
-          fi
-
-      - name: Grant Execute Permission for Gradle Wrapper
-        run: |
-          chmod +x ./gradlew || chmod +x android/gradlew || true
-
-      - name: Build Android APK
-        run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --no-daemon
-          elif [ -f "android/gradlew" ]; then
-            cd android && ./gradlew assembleDebug --no-daemon
-          else
-            echo "Tsy hita ny gradlew!"
-            exit 1
-          fi
-
-      - name: Upload APK Artifact
+      - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: TafitaMada-v1.0-APK
-          path: "**/build/outputs/apk/debug/*.apk"
+          name: TafitaMada-WebBundle
+          path: dist/
