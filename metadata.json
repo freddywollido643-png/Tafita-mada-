@@ -1,0 +1,6 @@
+{
+  "name": "TAFITA MADA V1.0",
+  "description": "Malagasy educational platform for exam and Baccalauréat preparation (Offline-first & Online-capable)",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
