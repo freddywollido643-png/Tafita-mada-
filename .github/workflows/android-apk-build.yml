@@ -41,9 +41,17 @@ jobs:
           npx cap add android
           npx cap sync android
 
+      - name: Fix Internet Permissions & Cleartext Traffic
+        run: |
+          # Ampiana ny alàlana INTERNET ao amin'ny AndroidManifest.xml
+          sed -i '/<\/manifest>/i \    <uses-permission android:name="android.permission.INTERNET" \/>' android/app/src/main/AndroidManifest.xml
+          sed -i '/<\/manifest>/i \    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" \/>' android/app/src/main/AndroidManifest.xml
+          
+          # Alàlana ampiasaina amin'ny HTTP (raha tsy HTTPS ny server-nao)
+          sed -i 's/<application/<application android:usesCleartextTraffic="true"/g' android/app/src/main/AndroidManifest.xml
+
       - name: Fix Kotlin Duplicate Dependencies
         run: |
-          # Ampiana ao amin'ny android/app/build.gradle ny vahaolana
           echo "
           dependencies {
               modules {
