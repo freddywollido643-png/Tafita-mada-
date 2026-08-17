@@ -32,8 +32,7 @@ jobs:
       - name: Setup Capacitor for Mobile
         run: |
           npm install @capacitor/core @capacitor/cli @capacitor/android
-          npx cap init "Tafita Mada" "com.tafitamada.app" --web-dir=dist
-          npx cap add android
+          npx cap sync android
 
       - name: Grant Execute Permission for Gradle
         run: chmod +x android/gradlew
